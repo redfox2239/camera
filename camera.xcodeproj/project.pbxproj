@@ -14,6 +14,7 @@
 		7FF0247B1CF467B5004F8022 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7FF024791CF467B5004F8022 /* LaunchScreen.storyboard */; };
 		7FF024861CF467B5004F8022 /* cameraTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FF024851CF467B5004F8022 /* cameraTests.swift */; };
 		7FF024911CF467B5004F8022 /* cameraUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FF024901CF467B5004F8022 /* cameraUITests.swift */; };
+		7FF0249F1CF46C86004F8022 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FF0249E1CF46C86004F8022 /* AVFoundation.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -47,6 +48,7 @@
 		7FF0248C1CF467B5004F8022 /* cameraUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = cameraUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7FF024901CF467B5004F8022 /* cameraUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = cameraUITests.swift; sourceTree = "<group>"; };
 		7FF024921CF467B5004F8022 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		7FF0249E1CF46C86004F8022 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,6 +56,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7FF0249F1CF46C86004F8022 /* AVFoundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -77,6 +80,7 @@
 		7FF024641CF467B5004F8022 = {
 			isa = PBXGroup;
 			children = (
+				7FF0249E1CF46C86004F8022 /* AVFoundation.framework */,
 				7FF0246F1CF467B5004F8022 /* camera */,
 				7FF024841CF467B5004F8022 /* cameraTests */,
 				7FF0248F1CF467B5004F8022 /* cameraUITests */,
@@ -193,6 +197,7 @@
 				TargetAttributes = {
 					7FF0246C1CF467B5004F8022 = {
 						CreatedOnToolsVersion = 7.3.1;
+						DevelopmentTeam = G47HTNUWJA;
 					};
 					7FF024801CF467B5004F8022 = {
 						CreatedOnToolsVersion = 7.3.1;
@@ -399,10 +404,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				INFOPLIST_FILE = camera/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = AppAcademia.camera;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 			};
 			name = Debug;
 		};
@@ -410,10 +418,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				INFOPLIST_FILE = camera/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = AppAcademia.camera;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 			};
 			name = Release;
 		};
