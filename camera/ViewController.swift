@@ -9,8 +9,11 @@
 import UIKit
 // カメラを使うためのimport
 import AVFoundation
+// PhotoLibraryを使うためのimport
+import Photos
 
-class ViewController: UIViewController {
+// AVFileOutputと相談する準備
+class ViewController: UIViewController, AVCaptureFileOutputRecordingDelegate {
 
     @IBOutlet weak var cameraView: UIView!
     // カメラやマイクを利用する仲介者を用意（セッション）
@@ -21,6 +24,8 @@ class ViewController: UIViewController {
     var backCamera: AVCaptureDevice!
     // マイク（音声入力）
     var audio: AVCaptureDevice!
+    // 動画を録画してくれる人＝動画画面キャプチャを撮ってくれる人
+    var capture: AVCaptureMovieFileOutput!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -28,6 +33,8 @@ class ViewController: UIViewController {
         
         // セッションの初期化
         self.session = AVCaptureSession()
+        // キャプチャーを撮ってくれる人の初期化
+        self.capture = AVCaptureMovieFileOutput()
         
         // いまiPhoneにはどのデバイスが装備されてるか調べる
         let devices = AVCaptureDevice.devices()
@@ -74,6 +81,8 @@ class ViewController: UIViewController {
             print("エラー")
         }
         
+        self.session.addOutput(self.capture)
+        
         // cameraViewにカメラを表示する
         let cameraLayer = AVCaptureVideoPreviewLayer(session: self.session)
         // サイズを変更します
@@ -93,12 +102,71 @@ class ViewController: UIViewController {
     }
 
     @IBAction func tapRecordButton(sender: AnyObject) {
+        // 録画してね=self.captureさん録画してね
+        // キャプチャをどこに保存しておくか？
+        // 保存するキャプチャをどこに保存するか？
+        // tmpを見つける
+        let temp = NSTemporaryDirectory()
+        let filePath = "\(temp)/record.mp4"
+        // NSURLの形にfilePathを変換する
+        let url = NSURL(fileURLWithPath: filePath)
+        self.capture.startRecordingToOutputFileURL(url, recordingDelegate: self)
+    }
+    
+    // 録画開始したらどうする？（AVCaptureMovieFileOutputさんとの相談）
+    func captureOutput(captureOutput: AVCaptureFileOutput!, didStartRecordingToOutputFileAtURL fileURL: NSURL!, fromConnections connections: [AnyObject]!) {
+        print("録画開始")
+    }
+    
+    // 録画終了した時どうする？（AVCaptureMovieFileOutputさんとの相談）
+    func captureOutput(captureOutput: AVCaptureFileOutput!, didFinishRecordingToOutputFileAtURL outputFileURL: NSURL!, fromConnections connections: [AnyObject]!, error: NSError!) {
+        print("録画終了")
+        // record.mp4をphotoLibraryに保存する
+        PHPhotoLibrary.sharedPhotoLibrary().performChanges({ 
+            // 写真アプリに対して、どんな変更したいの？（追加、削除、参照）
+            PHAssetChangeRequest.creationRequestForAssetFromVideoAtFileURL(outputFileURL)
+            }, completionHandler: nil)
     }
     
     @IBAction func tapRecordStopButton(sender: AnyObject) {
+        // 録画を停止する
+        self.capture.stopRecording()
     }
     
     @IBAction func tapChangeCameraButton(sender: AnyObject) {
+        // 前後のカメラを切り替える
+        // どのデバイスがInputとしてsessionに登録されているか調べる
+        self.session.inputs.forEach { (value) in
+            // as!は正体を保証してあげる。なぜ、これをやるかというと、いまから、カメラなのかマイクなのかを判定する
+            let deviceInput = value as! AVCaptureDeviceInput
+            // もし、カメラの時は切り替える。それ以外（マイクなど）のときは、何もしない。
+            if deviceInput.device.hasMediaType(AVMediaTypeVideo) {
+                // 内外でカメラを切り替える
+                // 今のカメラをInputから削除する
+                // 新しいカメラを追加する
+                self.session.removeInput(deviceInput)
+                // 外側カメラだったら、内カメラを追加する
+                // 内側カメラだったら、外カメラを追加する
+                if deviceInput.device.position == AVCaptureDevicePosition.Back {
+                    do {
+                        let input = try AVCaptureDeviceInput(device: self.frontCamera)
+                        self.session.addInput(input)
+                    }
+                    catch {
+                        print("エラー")
+                    }
+                }
+                else {
+                    do {
+                        let input = try AVCaptureDeviceInput(device: self.backCamera)
+                        self.session.addInput(input)
+                    }
+                    catch {
+                        print("エラー")
+                    }
+                }
+            }
+        }
     }
     
 }

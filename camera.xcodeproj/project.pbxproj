@@ -197,7 +197,7 @@
 				TargetAttributes = {
 					7FF0246C1CF467B5004F8022 = {
 						CreatedOnToolsVersion = 7.3.1;
-						DevelopmentTeam = G47HTNUWJA;
+						DevelopmentTeam = U435EYR422;
 					};
 					7FF024801CF467B5004F8022 = {
 						CreatedOnToolsVersion = 7.3.1;
@@ -493,6 +493,7 @@
 				7FF024971CF467B5004F8022 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		7FF024981CF467B5004F8022 /* Build configuration list for PBXNativeTarget "cameraTests" */ = {
 			isa = XCConfigurationList;
@@ -501,6 +502,7 @@
 				7FF0249A1CF467B5004F8022 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		7FF0249B1CF467B5004F8022 /* Build configuration list for PBXNativeTarget "cameraUITests" */ = {
 			isa = XCConfigurationList;
@@ -509,6 +511,7 @@
 				7FF0249D1CF467B5004F8022 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
