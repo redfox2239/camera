@@ -11,9 +11,10 @@ import UIKit
 import AVFoundation
 // PhotoLibraryを使うためのimport
 import Photos
+import AssetsLibrary
 
 // AVFileOutputと相談する準備
-class ViewController: UIViewController, AVCaptureFileOutputRecordingDelegate {
+class ViewController: UIViewController, AVCaptureFileOutputRecordingDelegate, AVCaptureVideoDataOutputSampleBufferDelegate {
 
     @IBOutlet weak var cameraView: UIView!
     // カメラやマイクを利用する仲介者を用意（セッション）
@@ -26,6 +27,11 @@ class ViewController: UIViewController, AVCaptureFileOutputRecordingDelegate {
     var audio: AVCaptureDevice!
     // 動画を録画してくれる人＝動画画面キャプチャを撮ってくれる人
     var capture: AVCaptureMovieFileOutput!
+    var dataOutput: AVCaptureVideoDataOutput!
+    var isRecording: Bool = false
+    
+    var fileWriter: AVAssetWriter!
+    var videoInput: AVAssetWriterInput!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -35,6 +41,28 @@ class ViewController: UIViewController, AVCaptureFileOutputRecordingDelegate {
         self.session = AVCaptureSession()
         // キャプチャーを撮ってくれる人の初期化
         self.capture = AVCaptureMovieFileOutput()
+        self.dataOutput = AVCaptureVideoDataOutput()
+        self.dataOutput.setSampleBufferDelegate(self, queue: dispatch_get_main_queue())
+        self.dataOutput.alwaysDiscardsLateVideoFrames = true
+        self.dataOutput.videoSettings = [
+            kCVPixelBufferPixelFormatTypeKey : Int(kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange)
+        ]
+        
+        let fileURL = NSURL(fileURLWithPath: "\(NSTemporaryDirectory())/tmp.mp4")
+        do {
+            fileWriter = try AVAssetWriter(URL: fileURL, fileType: AVFileTypeQuickTimeMovie)
+            let videoOutputSettings: Dictionary<String, AnyObject> = [
+                AVVideoCodecKey : AVVideoCodecH264,
+                AVVideoWidthKey : cameraView.frame.size.width,
+                AVVideoHeightKey : cameraView.frame.size.height
+            ];
+            self.videoInput = AVAssetWriterInput(mediaType: AVMediaTypeVideo, outputSettings: videoOutputSettings)
+            self.videoInput.expectsMediaDataInRealTime = true
+            self.fileWriter.addInput(self.videoInput)
+        }
+        catch {
+            print("エラー")
+        }
         
         // いまiPhoneにはどのデバイスが装備されてるか調べる
         let devices = AVCaptureDevice.devices()
@@ -81,7 +109,8 @@ class ViewController: UIViewController, AVCaptureFileOutputRecordingDelegate {
             print("エラー")
         }
         
-        self.session.addOutput(self.capture)
+        //self.session.addOutput(self.capture)
+        self.session.addOutput(self.dataOutput)
         
         // cameraViewにカメラを表示する
         let cameraLayer = AVCaptureVideoPreviewLayer(session: self.session)
@@ -102,15 +131,8 @@ class ViewController: UIViewController, AVCaptureFileOutputRecordingDelegate {
     }
 
     @IBAction func tapRecordButton(sender: AnyObject) {
-        // 録画してね=self.captureさん録画してね
-        // キャプチャをどこに保存しておくか？
-        // 保存するキャプチャをどこに保存するか？
-        // tmpを見つける
-        let temp = NSTemporaryDirectory()
-        let filePath = "\(temp)/record.mp4"
-        // NSURLの形にfilePathを変換する
-        let url = NSURL(fileURLWithPath: filePath)
-        self.capture.startRecordingToOutputFileURL(url, recordingDelegate: self)
+        self.isRecording = true
+        fileWriter.startWriting()
     }
     
     // 録画開始したらどうする？（AVCaptureMovieFileOutputさんとの相談）
@@ -122,15 +144,25 @@ class ViewController: UIViewController, AVCaptureFileOutputRecordingDelegate {
     func captureOutput(captureOutput: AVCaptureFileOutput!, didFinishRecordingToOutputFileAtURL outputFileURL: NSURL!, fromConnections connections: [AnyObject]!, error: NSError!) {
         print("録画終了")
         // record.mp4をphotoLibraryに保存する
-        PHPhotoLibrary.sharedPhotoLibrary().performChanges({ 
+        let fileURL = NSURL(fileURLWithPath: "\(NSTemporaryDirectory())/tmp.mp4")
+
+        PHPhotoLibrary.sharedPhotoLibrary().performChanges({
             // 写真アプリに対して、どんな変更したいの？（追加、削除、参照）
-            PHAssetChangeRequest.creationRequestForAssetFromVideoAtFileURL(outputFileURL)
+            PHAssetChangeRequest.creationRequestForAssetFromVideoAtFileURL(fileURL)
             }, completionHandler: nil)
     }
     
     @IBAction func tapRecordStopButton(sender: AnyObject) {
         // 録画を停止する
-        self.capture.stopRecording()
+//        self.capture.stopRecording()
+        // record.mp4をphotoLibraryに保存する
+        let fileURL = NSURL(fileURLWithPath: "\(NSTemporaryDirectory())/tmp.mp4")
+        
+        PHPhotoLibrary.sharedPhotoLibrary().performChanges({
+            // 写真アプリに対して、どんな変更したいの？（追加、削除、参照）
+            PHAssetChangeRequest.creationRequestForAssetFromVideoAtFileURL(fileURL)
+            }, completionHandler: nil)
+
     }
     
     @IBAction func tapChangeCameraButton(sender: AnyObject) {
@@ -166,6 +198,18 @@ class ViewController: UIViewController, AVCaptureFileOutputRecordingDelegate {
                     }
                 }
             }
+        }
+    }
+    
+    func captureOutput(captureOutput: AVCaptureOutput!, didOutputSampleBuffer sampleBuffer: CMSampleBuffer!, fromConnection connection: AVCaptureConnection!) {
+        print("撮影中")
+        print(sampleBuffer)
+
+        print(isRecording)
+        if isRecording {
+            //if self.videoInput.readyForMoreMediaData {
+                self.videoInput.appendSampleBuffer(sampleBuffer)
+            //}
         }
     }
     
